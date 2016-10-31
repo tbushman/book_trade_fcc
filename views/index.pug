@@ -1,0 +1,33 @@
+extends layout
+block page
+	- var menu = 'index'
+block content
+	- var dataString = JSON.stringify(data)
+	input(type='hidden', class='data-json', value= dataString)
+	if (data.length === 0)
+		h3 Where do you want to go?
+		h4 Search for a place and RSVP.
+	else
+		h3 Search results
+		each val, index in data
+			div.row.well
+				div.col-xs-12.col-sm-3.col-md-2
+					div.col-xs-6.col-sm-12.col-md-12
+						img.img-responsive(src=""+val.image_url+"")
+					div.col-xs-6.col-sm-12.col-md-12
+						if (!user)
+							a.btn.btn-default.btn-block(href="/register/"+term+"/"+location+"", role="button") #{val.rsvp_length} Going
+						else
+							a.btn.btn-default.btn-block(type="button", class="rsvp", id=""+val.id+"") #{val.rsvp_length} Going
+				div.col-xs-12.col-sm-9.col-md-10
+					div.col-xs-12
+						h4 #{val.name}
+					div.col-xs-12
+						h6 #{val.snippet_text}
+	script(type="text/javascript").
+		$(document).on('click', '.rsvp', function(){
+			var rsvp = $(this).attr('id');
+			$.post('/api/rsvp/'+rsvp+'').then(function(response){
+				$('#'+rsvp+'.rsvp').html(''+response+' Going')
+			})
+		});								

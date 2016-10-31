@@ -1,0 +1,38 @@
+body {
+  padding: 50px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: #00B7FF;
+}
+
+.hider {
+	display: none;
+}
+
+#wrapper {
+	margin-top: 60px;
+}
+
+.btn, .panel {
+	margin-top: 10px;
+}
+
+.panel-title:hover {
+	text-decoration: none;
+}
+
+.panel-heading {
+	cursor: pointer;
+}
+
+.navbar-brand {
+	line-height: 16px;
+}
+
+.subtitle {
+	color: #999;
+	font-size: 9px;
+	line-height: 0;
+}

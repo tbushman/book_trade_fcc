@@ -1,0 +1,20 @@
+extends layout
+block page
+	- var menu = 'login'
+block content
+	div.col-xs-12.col-md-6
+		h4 Sign in to #{appTitle}
+		form(enctype="multipart/form-data", method="POST", action="/login")
+			div.form-group
+				label(for='user') Username:
+				input.form-control(id="username", type="text", name="username")
+			div.form-group
+				label(for='pass') Password:
+				input.form-control(type="password", name="password", id="Password")
+			div.row
+				div.col-xs-4
+					button.btn.btn-primary.btn-block(type="submit") Log in
+				div.col-xs-1
+					h4.text-center or
+				div.col-xs-7
+					a.btn.btn-info.btn-block(role="button", href="/auth/twitter") Login via Twitter
