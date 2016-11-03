@@ -5,20 +5,23 @@ var mongoose = require('mongoose'),
 var User = new Schema({
 	username: String,
 	password: String,
+	location: String,
 	twitter: {
 		oauthID: Number,
 		name: String,
 		created: Date
 	},
-	searches: [{
+	wishlist: [{
 		title: String,
 		isbn: Number,
-		location: String
+		location: String,
+		thumbnail: String
 	}],
 	books: [{
 		title: String,
 		isbn: Number,
-		location: String
+		location: String,
+		thumbnail: String
 	}]
 }, { collection: 'fcc_books' });
 
