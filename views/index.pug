@@ -4,34 +4,30 @@ block page
 block content
 	- var dataString = JSON.stringify(data)
 	input(type='hidden', class='data-json', value= dataString)
-	if (data.length === 0)
+	if (data[0].books.length === 0)
 		h3 List your book for trade
 	else
 		h3 Search results
 		h4 Mark books you want
-		h4 list your own
 		each val, index in data
 			div.row.well
 				div.col-xs-12.col-sm-3.col-md-2
-					div.col-xs-6.col-sm-12.col-md-12
-						img.img-responsive(src=""+val.thumbnail+"")
-					div.col-xs-6.col-sm-12.col-md-12
-						if (!user)
-							a.btn.btn-default.btn-block(href="/register/"+val.isbn+"/"+location+"", role="button") #{val.rsvp_length} Going
-						else
-							a.btn.btn-default.btn-block(type="button", class="isbn", id=""+val.isbn+"") #{val.rsvp_length} Request
-		form(action="/api/add", method="POST", role="form")
-			div.row
-				div.col-xs-12.col-sm-4
-					h6 ISBN (see book's barcode):
-					div.input-group.col-xs-12
-						input.form-control(name="isbn", type="number")
-						div.input-group-addon
-							button.btn.btn-sm.nomargin(type="submit") Add
-	script(type="text/javascript").
-		$(document).on('click', '.rsvp', function(){
-			var isbn = $(this).attr('id');
-			$.post('/api/request/'+isbn+'').then(function(response){
-				$('#'+isbn+'.isbn').html(''+response+' Request')
-			})
-		});								
+					each book, i in val.books
+						div.col-xs-6.col-sm-12.col-md-12
+							img.img-responsive(src=""+book.thumbnail+"")
+						div.col-xs-6.col-sm-12.col-md-12
+							if (!user)
+								a.btn.btn-default.btn-block(href="/register/"+book.isbn+"/"+book.location+"", role="button") Request
+							else
+								a.btn.btn-default.btn-block(href="/api/wishlist/"+book.isbn+"/"+book.location+"", role="button") Request
+		h4 list your own
+	form(action="/api/add", method="POST", role="form")
+		div.col-xs-12.col-sm-4
+			h6 ISBN (if known):
+			div.input-group.col-xs-12
+				input.form-control(name="isbn", type="number")
+			h6 Book Title:
+			div.input-group.col-xs-12
+				input.form-control(name="title", type="text")
+		button.btn.btn-sm.nomargin(type="submit") Add
+		

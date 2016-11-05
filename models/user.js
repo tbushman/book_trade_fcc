@@ -6,11 +6,6 @@ var User = new Schema({
 	username: String,
 	password: String,
 	location: String,
-	twitter: {
-		oauthID: Number,
-		name: String,
-		created: Date
-	},
 	wishlist: [{
 		title: String,
 		isbn: Number,

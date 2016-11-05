@@ -1,0 +1,36 @@
+extends layout
+block page
+	- var menu = 'add'
+block content
+	if (data.length === 0)
+		h3 Add a book to the trade library
+	else
+		h3 Search results
+		h4= info
+		each val, index in data
+			div.row.well
+				div.col-xs-12.col-sm-3.col-md-2
+					div.col-xs-6.col-sm-12.col-md-12
+						img.img-responsive(src=""+val.thumbnail+"")
+					div.col-xs-6.col-sm-12.col-md-12
+						if (!user)
+							a.btn.btn-default.btn-block(href="/register/"+val.industryIdentifiers[0].identifier+"", role="button") Choose
+						else
+							a.btn.btn-default.btn-block(href="#", role="button", id=""+val.industryIdentifiers[0].identifier+"", class="choose") Choose
+	form(action="/api/add", method="POST", role="form")
+		div.col-xs-12.col-sm-4
+			h6 ISBN (if known):
+			div.input-group.col-xs-12
+				input.form-control(name="isbn", type="number")
+			h6 Book Title:
+			div.input-group.col-xs-12
+				input.form-control(name="title", type="text")
+		button.btn.btn-sm.nomargin(type="submit") Add
+		
+	script(type="text/javascript").
+		$(document).on('click', '.choose', function(){
+			var isbn = $(this).attr('id');
+			$.post('/api/books/'+isbn+'').then(function(response){
+				$('.choose').html(''+response+' Requested')
+			})
+		});

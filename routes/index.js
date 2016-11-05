@@ -55,7 +55,7 @@ router.get('/', function(req, res, next) {
 			} else {
 				var title = last_search.title;
 				var location = last_search.location;
-				return res.redirect('/api/list/'+title+'/'+location+'');
+				return res.redirect('/api/'+title+'/'+location+'');
 			}
 		})
 		
@@ -88,7 +88,7 @@ router.get('/register*', function(req, res, next) {
 });
 
 router.post('/register', upload.array(), function(req, res, next) {
-	User.register(new User({ username : req.body.username }), req.body.password, function(err, user) {
+	User.register(new User({ username : req.body.username, location: req.body.location }), req.body.password, function(err, user) {
 		if (err) {
 			return res.render('register', {
 				info: "Sorry. That username already exists. Try again."
@@ -118,7 +118,7 @@ router.post('/login', upload.array(), passport.authenticate('local'), function(r
 	}
 });
 
-router.get('/auth/twitter', passport.authenticate('twitter'), function(req, res, next){
+/*router.get('/auth/twitter', passport.authenticate('twitter'), function(req, res, next){
 	return next();
 });
 
@@ -131,7 +131,7 @@ router.get('/auth/twitter/callback', passport.authenticate('twitter', {
 		return res.redirect('/');
 	}
 });
-
+*/
 router.get('/logout', function(req, res, next){
 	req.logout();
 	return res.redirect('/');
@@ -149,14 +149,14 @@ router.get('/user', ensureAuthenticated, function(req, res, next){
 			if (results.length > 0) {
 				
 				return res.render('user', {
-					info: 'Your books / wishlist'
+					info: 'Your books / wishlist',
 					user: req.user,
-					data: results
+					data: user
 				});
 
 			} else {
 				return res.render('user', { 
-					info: 'Your books / wishlist is empty. Add a book for trade!'
+					info: 'Your books / wishlist is empty. Add a book for trade!',
 					user: req.user,
 					data: []
 				});
@@ -165,14 +165,24 @@ router.get('/user', ensureAuthenticated, function(req, res, next){
 	});
 });
 
-router.get('/search', function(req, res, next){
-	return res.render('search', {
-		user: req.user
+router.get('/add', function(req, res, next){
+	return res.render('add', {
+		user: req.user,
+		data: []
 	})
 });
 
-
 router.all('/api*', ensureAuthenticated);
+
+router.get('/api/:param1/:param2', function(req, res, next){
+	if (isNaN(req.params.param1)) {
+		return res.redirect('/api/add')
+	} else {
+		var isbn = req.params.param1;
+		var location = req.params.param2;
+		return res.redirect('/api/wishlist/'+isbn+'/'+location)
+	}
+})
 
 //User wants to trade their book. Look up by title, return list for user to choose their edition from.
 router.post('/api/add', function(req, res, next) {
@@ -181,8 +191,9 @@ router.post('/api/add', function(req, res, next) {
 		if (err) {
 			return next(err)
 		}
+		//console.log(data[0].industryIdentifiers[1])
 		return res.render('add', { //??
-			info: 'Which of these editions most closely matches yours?'
+			info: 'Which of these editions most closely matches yours?',
 			user: req.user,
 			title: title,
 			data: data
@@ -190,48 +201,73 @@ router.post('/api/add', function(req, res, next) {
 	});
 })
 
+/*router.get('/api/books/:isbn', function(req, res, next) {
+	
+})*/
+
 //User chooses their edition from list. Display edition thumbnail and success upon DB entry.
-router.post('api/books/:isbn', function(req, res, next) {
-	var isbn = req.params.isbn;
-	isbn.resolve(isbn, function(err, book){
+router.post('/api/books/:isbn', function(req, res, next) {
+	var isbn_no = req.params.isbn;
+	isbn.resolve(''+isbn_no+'', function(err, book){
 		if (err) {
 			return next(err)
 		}
 		var title = book.title;
 		var thumbnail = book.imageLinks.thumbnail;
 		var location = req.user.location;
+		console.log(location)
 		var entry = {
 			title: title,
 			location: location,
-			isbn: isbn,
+			isbn: isbn_no,
 			thumbnail: thumbnail
 		}
-		User.findOneAndUpdate(
-			{_id: req.user._id},
-			{$push: {books: entry}},
-			{safe: true, upsert: true},
-			function(error, docs) {
+		User.find(
+			{_id: req.user._id, books: {$elemMatch: entry} },
+			function(error, data) {
 				if (error) {
 					return next(error);
 				}
-				return res.redirect('user');
-				/*User.find({_id: req.user._id}, function(er, docs) {
-					if (er) {
-						return next(er)
-					}
-					return res.render('user', {
-						user: req.user,
-						data: docs
-					})
-				})*/
-			})		
+				if (data.length === 0) {
+					User.findOneAndUpdate(
+						{_id: req.user._id},
+						{$push: {books: entry}},
+						{safe: true, upsert: true},
+						function(error, docs) {
+							if (error) {
+								return next(error);
+							}
+							return res.json('book');
+							/*User.find({_id: req.user._id}, function(er, docs) {
+								if (er) {
+									return next(er)
+								}
+								return res.render('user', {
+									user: req.user,
+									data: docs
+								})
+							})*/
+						})	
+				} else {
+					User.findOneAndUpdate(
+						{_id: req.user._id},
+						{$pull: {books: {$elemMatch: {isbn: isbn_no}} }},
+						{multi: true},
+						function(err, docs){
+							if (err) {
+								return next(err);
+							}
+							return res.json('removed');
+						});
+				}
+		});	
 	})
 })
 
 //from home page, user finds a book they want. They click the get link which redirects here, if auth
 //or register with params if not authenticated
 //add to user wishlist and redirect to user page which should display updated wishlist
-router.post('api/wishlist/:isbn/:location', function(req, res, next) {
+router.post('/api/wishlist/:isbn/:location', function(req, res, next) {
 	var isbn = req.params.isbn;
 	var location = req.params.location;
 	isbn.resolve(isbn, function(err, book){
@@ -254,152 +290,11 @@ router.post('api/wishlist/:isbn/:location', function(req, res, next) {
 				if (error) {
 					return next(error);
 				}
-				return res.redirect('user');
+				return res.json('book');
 			})		
 	})
 })
 
-
-
-/*GET isbn list*/
-/*
-router.get('/api/list/:title/:location', function(req, res, next) {
-	var title = req.params.title;
-	var location = req.params.location;
-	books.search(title, options, function (err, data) {
-		if (err) {
-			return next(err)
-		}
-		//var results = data.businesses;
-		
-	//	async.map(data, getBookInfo, function(err, result){
-			//console.log(result) //array
-			return res.render('index', {
-				
-				user: req.user,
-				title: title,
-				location: location,
-				data: data
-			});
-	//	})
-	});
-});
-*/
-/*GET db list by ISBN?*/
-/*
-router.post('/api/rsvp/:id', function(req, res, next){
-	var books_id = req.params.id;
-	var push_rsvp = {
-		id: books_id
-	}
-	User.find(
-		{_id: req.user._id, rsvp: {$elemMatch: push_rsvp} },
-		function(error, data) {
-			if (error) {
-				return next(error);
-			}
-			if (data.length === 0) {
-				User.findOneAndUpdate(
-					{_id: req.user._id},
-					{$push: {rsvp: push_rsvp}},
-					{safe: true, upsert: true},
-					function(err, docs){
-						if (err) {
-							return next(err);
-						}
-						User.find({rsvp: {$elemMatch: {id: books_id} } }, function(err, users){
-							if (err) {
-								return next(err);
-							}
-							var length = users.length;
-							if (users.length === 0) {
-								length = 0;
-							}
-							res.contentType('application/json');
-							return res.json(length);
-						});
-					});
-			} else {
-				User.findOneAndUpdate(
-					{_id: req.user._id},
-					{$pull: {rsvp: {$elemMatch: {id: books_id}} }},
-					{multi: true},
-					function(err, docs){
-						if (err) {
-							return next(err);
-						}
-						//var rsvp = [];
-						User.find({rsvp: {$elemMatch: {id: books_id} } }, function(err, users){
-							if (err) {
-								return next(err);
-							}
-							var length = users.length;
-							if (users.length === 0) {
-								length = 0;
-							}
-							res.contentType('application/json');
-							return res.json(length);
-						});
-					})
-				
-			}
-		}
-	)
-});
-
-router.post('/wish', upload.array(), function(req, res, next) {
-	var title = req.body.title;
-	var location = req.body.location;
-	var isbns = req.body.isbns;
-	if (req.isAuthenticated()) {
-		var push_wish = {
-			title: title,
-			location: location,
-			isbns: isbns
-		};
-		User.findOneAndUpdate(
-			{_id: req.user._id},
-			{$push:{wishlist: push_wish}},
-			{safe: true, upsert: false},
-			function(err, docs) {
-				//console.log(docs)
-				if (err) {
-					return next(err);
-				}
-				books.search({ title: title, location: location }, options).then(function (data) {
-					var results = data.businesses;
-					return res.render('index', {
-						user: req.user,
-						title: title,
-						location: location,
-						data: result
-					});
-				}).catch(function (err) {
-					return next(err);
-				});
-				
-			} 
-		);
-	} else {
-		books.search({ title: title, location: location }, options).then(function (data) {
-			var results = data.businesses;
-
-			async.map(results, getBookInfo, function(err, result){
-				//console.log(result) //array
-				return res.render('index', {
-					user: req.user,
-					title: title,
-					location: location,
-					data: result
-				});
-			})
-		}).catch(function (err) {
-			return next(err);
-		});
-	}
-});
-
-*/
 
 
 module.exports = router;

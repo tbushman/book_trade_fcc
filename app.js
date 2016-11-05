@@ -20,7 +20,7 @@ var routes = require('./routes/index');
 var User = require('./models/user');
 
 passport.use(new LocalStrategy(User.authenticate()));
-passport.use(new TwitterStrategy({
+/*passport.use(new TwitterStrategy({
 	consumerKey: process.env.TWITTER_CONSUMER_KEY,
 	consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
 	callbackURL: process.env.TWITTER_CALLBACK_URL
@@ -52,7 +52,7 @@ passport.use(new TwitterStrategy({
 			}
 	    });
 	}
-));
+));*/
 // serialize and deserialize
 passport.serializeUser(function(user, done) {
   //console.log('serializeUser: ' + user._id);
@@ -72,7 +72,7 @@ app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
 app.set('view options', { layout: false });
 
-app.locals.appTitle = "FCC Nightlife app";
+app.locals.appTitle = "FCC Book Trade app";
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
@@ -128,9 +128,9 @@ app.use(function(err, req, res, next) {
 });
 
 
-var uri = process.env.MONGOLAB_URI; //process.env.DEVDB || process.env.MONGOLAB_URI;
+var uri = /*process.env.MONGOLAB_URI;*/process.env.DEVDB;// || process.env.MONGOLAB_URI;
 
-mongoose.connect(uri, {authMechanism: 'ScramSHA1'});
+mongoose.connect(uri/*, {authMechanism: 'ScramSHA1'}*/);
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 
