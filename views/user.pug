@@ -2,17 +2,29 @@ extends layout
 block page
 	- var menu = 'user'
 block content 
+	if (request)
+		div.row.well
+			h4 You have #{request.length} request(s)
+			each val, index in request
+				div.col-xs-12.col-sm-12.col-md-6
+					div.col-xs-12.col-sm-3.col-md-3
+						img.img-responsive(src=""+val.thumbnail+"")
+					div.col-xs-12.col-sm-9.col-md-9
+						h4 #{val.title}
 	h3= info
 	if (data.length === 0)
 		h3 Click 'Add' to build a list
 	else
 		div.row.well
+			h4 Your books
 			each val, index in data.books
 				div.col-xs-12.col-sm-12.col-md-6
 					div.col-xs-12.col-sm-3.col-md-3
 						img.img-responsive(src=""+val.thumbnail+"")
 					div.col-xs-12.col-sm-9.col-md-9
 						h4 #{val.title}
+		div.row.well
+			h4 Your wishlist
 			each val, index in data.wishlist
 				div.col-xs-12.col-sm-12.col-md-6
 					div.col-xs-12.col-sm-3.col-md-3

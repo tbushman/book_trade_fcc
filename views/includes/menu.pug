@@ -6,7 +6,7 @@ navbar.navbar-default.navbar-fixed-top
 				span.icon-bar
 				span.icon-bar
 				span.icon-bar
-			a.navbar-brand(href="#") go.bli.sh
+			a.navbar-brand(href="#") bi.bli.sh
 				h6.subtitle #{appTitle}
 		div.collapse.navbar-collapse#navbar-collapse-1
 			
@@ -21,7 +21,8 @@ navbar.navbar-default.navbar-fixed-top
 							h4 Add
 					li(class=(menu === 'user')?'active':'')
 						a(href="/user") 
-							h4 Profile
+							h4 Profile 
+								span.badge= requests
 				ul.nav.navbar-nav.navbar-right
 					li
 						a(href="/logout") 

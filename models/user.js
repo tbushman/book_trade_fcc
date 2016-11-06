@@ -6,15 +6,16 @@ var User = new Schema({
 	username: String,
 	password: String,
 	location: String,
+	coords: [],
 	wishlist: [{
 		title: String,
-		isbn: Number,
+		isbn: String,
 		location: String,
 		thumbnail: String
 	}],
 	books: [{
 		title: String,
-		isbn: Number,
+		isbn: String,
 		location: String,
 		thumbnail: String
 	}]

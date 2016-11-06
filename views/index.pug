@@ -1,14 +1,16 @@
 extends layout
 block page
 	- var menu = 'index'
+	- var requests = request
 block content
 	- var dataString = JSON.stringify(data)
 	input(type='hidden', class='data-json', value= dataString)
-	if (data[0].books.length === 0)
+	if (!data[0].books)
 		h3 List your book for trade
 	else
-		h3 Search results
-		h4 Mark books you want
+		if (user)
+			h3 Books in your area
+			h4 Mark books you want
 		each val, index in data
 			div.row.well
 				div.col-xs-12.col-sm-3.col-md-2
@@ -16,18 +18,18 @@ block content
 						div.col-xs-6.col-sm-12.col-md-12
 							img.img-responsive(src=""+book.thumbnail+"")
 						div.col-xs-6.col-sm-12.col-md-12
-							if (!user)
-								a.btn.btn-default.btn-block(href="/register/"+book.isbn+"/"+book.location+"", role="button") Request
-							else
-								a.btn.btn-default.btn-block(href="/api/wishlist/"+book.isbn+"/"+book.location+"", role="button") Request
-		h4 list your own
-	form(action="/api/add", method="POST", role="form")
-		div.col-xs-12.col-sm-4
-			h6 ISBN (if known):
-			div.input-group.col-xs-12
-				input.form-control(name="isbn", type="number")
-			h6 Book Title:
-			div.input-group.col-xs-12
-				input.form-control(name="title", type="text")
-		button.btn.btn-sm.nomargin(type="submit") Add
-		
+							if (user)
+								form(action="/api/wishlist/"+book.isbn+"/"+book.location+"", method="POST", role="form")
+									button.btn.btn-default.btn-block(href="#", role="submit") Request
+		if (user)
+			h4 list your own
+			form(action="/api/add", method="POST", role="form")
+				div.col-xs-12.col-sm-4
+					h6 ISBN (if known):
+					div.input-group.col-xs-12
+						input.form-control(name="isbn", type="number")
+					h6 Book Title:
+					div.input-group.col-xs-12
+						input.form-control(name="title", type="text")
+				button.btn.btn-sm.nomargin(type="submit") Add
+			
