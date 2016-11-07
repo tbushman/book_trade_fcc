@@ -2,40 +2,31 @@ extends layout
 block page
 	- var menu = 'add'
 block content
-	if (isbn)
+	if (data !== [])
+		
 		h4= info
 		div.row.well
-			div.col-xs-12.col-sm-3.col-md-2
-				div.col-xs-6.col-sm-12.col-md-12
+			if (isbn)
+				div.col-xs-12.col-sm-4.col-md-3.col-lg-2
 					img.img-responsive(src=""+data.imageLinks.thumbnail+"")
-				div.col-xs-6.col-sm-12.col-md-12
-					if (!user)
-						a.btn.btn-default.btn-block(href="/register/"+isbn+"", role="button") Choose
-					else
-						form(action="/api/books/"+isbn+"", method="POST", role="form")
-							button.btn.btn-default.btn-block(href="#", role="submit") Choose
-	else
-		h3 Search results
-		h4= info
-		each val, index in data
-			div.row.well
-				div.col-xs-12.col-sm-3.col-md-2
-					div.col-xs-6.col-sm-12.col-md-12
+					form(action="/api/books/"+isbn+"", method="POST", role="form")
+						button.btn.btn-default.btn-block(href="#", role="submit") Choose
+			else
+				each val, index in data
+					div.col-xs-12.col-sm-4.col-md-3.col-lg-2
 						img.img-responsive(src=""+val.thumbnail+"")
-					div.col-xs-6.col-sm-12.col-md-12
-						if (!user)
-							a.btn.btn-default.btn-block(href="/register/"+val.industryIdentifiers[0].identifier+"", role="button") Choose
-						else
-							form(action="/api/books/"+val.industryIdentifiers[0].identifier+"", method="POST", role="form")
-								button.btn.btn-default.btn-block(href="#", role="submit") Choose
+
+						form.row(action="/api/books/"+val.industryIdentifiers[0].identifier+"", method="POST", role="form")
+							button.btn.btn-default.btn-block(href="#", role="submit") Choose
+	
 	h3 Add a book to the trade library
-	form(action="/api/add", method="POST", role="form")
-		div.col-xs-12.col-sm-4
+	form.row(action="/api/add", method="POST", role="form")
+		div.col-xs-12.col-sm-8
 			h6 ISBN (if known):
 			div.input-group.col-xs-12
 				input.form-control(name="isbn", type="text")
 			h6 Book Title:
 			div.input-group.col-xs-12
 				input.form-control(name="title", type="text")
-		button.btn.btn-sm.nomargin(type="submit") Add
+			button.btn.btn-block(type="submit") Add
 		

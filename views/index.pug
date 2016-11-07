@@ -28,13 +28,13 @@ block content
 		
 		else
 			h4 list your own
-				form(action="/api/add", method="POST", role="form")
-					div.col-xs-12.col-sm-4
-						h6 ISBN (if known):
-						div.input-group.col-xs-12
-							input.form-control(name="isbn", type="number")
-						h6 Book Title:
-						div.input-group.col-xs-12
-							input.form-control(name="title", type="text")
-					button.btn.nomargin(type="submit") Add
+			form.row(action="/api/add", method="POST", role="form")
+				div.col-xs-12.col-sm-4
+					h6 ISBN (if known):
+					div.input-group.col-xs-12
+						input.form-control(name="isbn", type="text")
+					h6 Book Title:
+					div.input-group.col-xs-12
+						input.form-control(name="title", type="text")
+					button.btn.btn-block(type="submit") Add
 		

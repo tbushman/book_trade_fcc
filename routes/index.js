@@ -158,20 +158,6 @@ router.post('/login', upload.array(), passport.authenticate('local'), function(r
 	return res.redirect('/');
 });
 
-/*router.get('/auth/twitter', passport.authenticate('twitter'), function(req, res, next){
-	return next();
-});
-
-router.get('/auth/twitter/callback', passport.authenticate('twitter', { 
-	failureRedirect: '/' 
-}), function(req, res, next) {
-	if (req.app.locals.title) {
-		return res.redirect('/api/'+req.app.locals.title+'/'+req.app.locals.location+'');
-	} else {
-		return res.redirect('/');
-	}
-});
-*/
 router.get('/logout', function(req, res, next){
 	req.logout();
 	return res.redirect('/');
@@ -247,10 +233,16 @@ router.get('/user', ensureAuthenticated, function(req, res, next){
 });
 
 
-router.get('/add', function(req, res, next){
-	return res.render('add', {
-		user: req.user,
-		data: []
+router.get('/add', ensureAuthenticated, function(req, res, next){
+	User.findOne({_id: req.user._id}, function(err, user){
+		if (err) {
+			return next(err)
+		}
+		console.log(user)
+		return res.render('add', {
+			user: req.user,
+			data: []
+		})
 	})
 });
 
@@ -468,43 +460,25 @@ router.post('/api/accept/:user_id/:isbn', function(req, res, next) {
 					if(error) {
 						return next(error)
 					}
-					return res.render('user', {
-						success: 'btn-success',
-						requestor_email: usr.email,
-						requestor_name: usr.username,
-						user: req.user,
-						request: docs.requestlist,
-						data: docs
+					User.findOneAndUpdate(
+					{_id: req.user._id},
+					{$pull: {books: {isbn: isbn_no}}},
+					function(error, user) {
+						if (error) {
+							return next(error)
+						}
+						return res.render('user', {
+							success: 'btn-success',
+							requestor_email: user.email,
+							requestor_name: user.username,
+							user: req.user,
+							request: docs.requestlist,
+							data: docs
+						})
 					})
+					
 			});
 	});	
-	/*{wishlist:
-		{$elemMatch: 
-			{isbn: isbn_no}
-			
-		}
-	},*/
-/*	).exec(function(err, requester){
-		if (err) {
-			return next(err)
-		}
-		console.log(docs)
-		
-		User.findOneAndUpdate(
-		{_id: ObjectId(''+req.user._id+''), 'requestlist.isbn': isbn_no},
-		{$set: {'requestlist.$.accepted': true}}
-		
-		).exec(function(err, user){
-			if (err) {
-				return next(err)
-			}
-			return res.render('user', {
-				user: req.user,
-				request: docs.requestlist,
-				data: user
-			})
-		})
-	})*/
 })
 router.delete('/api/reject/:user_id/:isbn', function(req, res, next) {
 	var requester = req.params.user_id;
