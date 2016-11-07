@@ -3,31 +3,109 @@ block page
 	- var menu = 'user'
 block content 
 	if (request)
-		div.row.well
-			h4 You have #{request.length} request(s)
-			each val, index in request
-				div.col-xs-12.col-sm-12.col-md-6
-					div.col-xs-12.col-sm-3.col-md-3
-						img.img-responsive(src=""+val.thumbnail+"")
-					div.col-xs-12.col-sm-9.col-md-9
-						h4 #{val.title}
+		
+		h4 Requests of your books
+		table.table.table-stripped
+			thead
+				tr
+					th(colspan="2") Actions
+					th Book
+					th Requester
+				tbody
+					each val, index in request
+						tr(data-id=""+val.requester+""+"@"+""+val.isbn+"", id="request")
+							td.action
+								button.btn.btn-danger.btn-sm.reject(type="button")
+									span.glyphicon.glyphicon-remove(title="Reject")
+							td.action
+								form(role="form", action="/api/accept/" + val.requester + "/" + val.isbn +"", method="POST", enctype="multipart/form-data")
+									if (success)
+										button.btn.btn-sm(type="submit", class= "btn-success accept")
+											span.glyphicon(class="glyphicon-ok", title="Accept")
+									else 
+										button.btn.btn-sm(type="submit", class= "accept")
+											span.glyphicon(class="glyphicon-ok", title="Accept")
+							td
+								img.img-responsive(src=""+val.thumbnail+"")
+								h4 #{val.title}
+							td
+								a.btn.btn-default(href="/api/contact/"+val.requester+"", role="button", target="_blank") Requester Profile
 	h3= info
 	if (data.length === 0)
 		h3 Click 'Add' to build a list
 	else
-		div.row.well
-			h4 Your books
-			each val, index in data.books
-				div.col-xs-12.col-sm-12.col-md-6
-					div.col-xs-12.col-sm-3.col-md-3
-						img.img-responsive(src=""+val.thumbnail+"")
-					div.col-xs-12.col-sm-9.col-md-9
-						h4 #{val.title}
-		div.row.well
-			h4 Your wishlist
-			each val, index in data.wishlist
-				div.col-xs-12.col-sm-12.col-md-6
-					div.col-xs-12.col-sm-3.col-md-3
-						img.img-responsive(src=""+val.thumbnail+"")
-					div.col-xs-12.col-sm-9.col-md-9
-						h4 #{val.title}
+		h4 Your Books
+		table.table.table-stripped
+			thead
+				tr
+					th(colspan="1") Actions
+					th Book
+					th Details
+				tbody
+					each val, index in data.books
+						tr(data-id=""+val.title+""+"@"+""+val.isbn+"", id="books")
+							td.action
+								button.btn.btn-danger.btn-sm.reject(type="button")
+									span.glyphicon.glyphicon-remove(title="Reject")
+							td
+								img.img-responsive(src=""+val.thumbnail+"")
+								
+							td
+								h4 #{val.title}
+		
+		h4 Your Wishlist
+		table.table.table-stripped
+			thead
+				tr
+					th(colspan="1") Actions
+					th Book
+					th Status
+				tbody
+					each val, index in data.wishlist
+						tr(data-id=""+val.owner+""+"@"+""+val.isbn+"", id="wish")
+							td.action
+								button.btn.btn-danger.btn-sm.reject(type="button")
+									span.glyphicon.glyphicon-remove(title="Reject")
+							td
+								img.img-responsive(src=""+val.thumbnail+"")
+								
+							td
+								if (requestor_email)
+									h4 Accepted
+									h3 Send an e-mail to 
+									a(href="mailto:"+requestor_email+"") 
+										#{requestor_name}
+										
+								else
+									h4 Pending
+	script(type="text/javascript").
+		function findTr(event) {
+			var target = event.srcElement || event.target;
+			var $target = $(target);
+			var $tr =  $target.parents('tr');
+			return $tr;
+		};
+		$(document).on('click', '.reject', function(event) {
+			var $tr = findTr(event);
+			var incoming_id = $tr.attr('data-id'); 
+			var isbn = incoming_id.split('@').pop();
+			var user_id = incoming_id.split('@')[0];
+			var url;
+			if ($tr.attr('id') === 'request') {
+				url = '/api/reject/' + user_id + '/' + isbn;
+			}
+			else if ($tr.attr('id') === 'wish') {
+				url = '/api/wishlist/remove/' + user_id + '/' + isbn;
+			}
+			else if ($tr.attr('id') === 'books') {
+				url = '/api/books/remove/' + isbn;
+			}
+			$.ajax({
+				url: url,
+				type: 'DELETE',
+				success: function(data, status, xhr) {
+					$tr.remove();
+					location.reload(true)
+				}
+			});
+		});

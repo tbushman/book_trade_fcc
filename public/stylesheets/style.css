@@ -15,8 +15,8 @@ a {
 	margin-top: 60px;
 }
 
-.btn, .panel {
-	margin-top: 10px;
+.btn, .margins {
+	margin: 10px auto;
 }
 
 .panel-title:hover {
